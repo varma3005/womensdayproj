@@ -12,35 +12,39 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
 
   const downloadCard = async () => {
     if (cardRef.current) {
-      const canvas = await html2canvas(cardRef.current);
+      const canvas = await html2canvas(cardRef.current, {
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: null, // ensures transparent background if needed
+      });
       const link = document.createElement('a');
       link.download = 'womens-day-card.png';
-      link.href = canvas.toDataURL();
+      link.href = canvas.toDataURL('image/png');
       link.click();
     }
   };
 
   const shareCard = async () => {
     if (cardRef.current) {
-      const canvas = await html2canvas(cardRef.current);
-      const blob = await new Promise<Blob>((resolve) => {
-        canvas.toBlob((blob) => {
-          resolve(blob as Blob);
-        });
+      const canvas = await html2canvas(cardRef.current, {
+        useCORS: true,
+        allowTaint: false,
+        backgroundColor: null,
       });
-
-      if (navigator.share) {
-        const file = new File([blob], 'womens-day-card.png', { type: 'image/png' });
-        try {
-          await navigator.share({
-            files: [file],
-            title: 'Women\'s Day E-Card',
-            text: 'Check out this Women\'s Day E-Card I created!'
-          });
-        } catch (error) {
-          console.error('Error sharing:', error);
+      canvas.toBlob(async (blob) => {
+        if (blob && navigator.share) {
+          const file = new File([blob], 'womens-day-card.png', { type: 'image/png' });
+          try {
+            await navigator.share({
+              files: [file],
+              title: "Women's Day E-Card",
+              text: "Check out this Women's Day E-Card I created!",
+            });
+          } catch (error) {
+            console.error('Error sharing:', error);
+          }
         }
-      }
+      }, 'image/png');
     }
   };
 
@@ -48,14 +52,19 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
     <div className="w-full max-w-md">
       <div
         ref={cardRef}
-        className="aspect-[3/4] rounded-xl overflow-hidden shadow-2xl relative transform transition-transform hover:scale-[1.02] duration-300"
-        style={{
-          backgroundImage: `url(${cardData.template.backgroundUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
+        className="relative aspect-[3/4] rounded-xl overflow-hidden shadow-2xl transform transition-transform hover:scale-[1.02] duration-300"
       >
+        {/* Render the background image as an <img> element */}
+        {cardData.template.backgroundUrl && (
+          <img
+            src={cardData.template.backgroundUrl}
+            alt="Card Background"
+            className="absolute inset-0 w-full h-full object-cover"
+            crossOrigin="anonymous"
+          />
+        )}
+
+        {/* Overlay (ensure this overlay is semi-transparent if you want the bg visible) */}
         <div className={`absolute inset-0 ${cardData.template.overlayColor}`} />
 
         <div className="absolute inset-0 p-8 flex flex-col justify-between">
@@ -65,10 +74,10 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
                 {cardData.recipient ? `Dear ${cardData.recipient}` : 'Dear Friend'}
               </div>
             </div>
-            
+
             {cardData.recipientPhoto && (
               <div className="mt-8 flex justify-center">
-                <div className="w-40 h-40 full overflow-hidden border-4 border-white/30 shadow-lg">
+                <div className="w-40 h-40 overflow-hidden border-4 border-white/30 shadow-lg">
                   <img
                     src={cardData.recipientPhoto}
                     alt={cardData.recipient || 'Recipient'}
@@ -78,14 +87,14 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
               </div>
             )}
           </div>
-          
+
           <div className="space-y-6">
             <div className={`p-2 rounded-md ${cardData.template.fontBackgroundColor}`}>
               <p className={`text-xl leading-relaxed ${cardData.template.textColor} drop-shadow-lg`}>
                 {cardData.message}
               </p>
             </div>
-            
+
             <div className={`p-2 rounded-md ${cardData.template.fontBackgroundColor}`}>
               <p className={`text-right ${cardData.template.textColor} drop-shadow-lg`}>
                 With love,<br />
