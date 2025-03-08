@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { CardData } from '../types';
 import html2canvas from 'html2canvas';
 import { Download, Share2 } from 'lucide-react';
@@ -9,9 +9,19 @@ interface CardPreviewProps {
 
 export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() => {
+    if (cardData.template.backgroundUrl) {
+      const img = new Image();
+      img.src = cardData.template.backgroundUrl;
+      img.onload = () => setImageLoaded(true);
+      img.onerror = () => setImageLoaded(false);
+    }
+  }, [cardData.template.backgroundUrl]);
 
   const downloadCard = async () => {
-    if (cardRef.current) {
+    if (cardRef.current && imageLoaded) {
       const canvas = await html2canvas(cardRef.current, {
         useCORS: true,
         allowTaint: false,
@@ -25,7 +35,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
   };
 
   const shareCard = async () => {
-    if (cardRef.current) {
+    if (cardRef.current && imageLoaded) {
       const canvas = await html2canvas(cardRef.current, {
         useCORS: true,
         allowTaint: false,
@@ -61,6 +71,8 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
             alt="Card Background"
             className="absolute inset-0 w-full h-full object-cover"
             crossOrigin="anonymous"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => setImageLoaded(false)}
           />
         )}
 
@@ -111,6 +123,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
         <button
           onClick={downloadCard}
           className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-lg hover:from-pink-700 hover:to-rose-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+          disabled={!imageLoaded}
         >
           <Download className="w-5 h-5" />
           Download Card
@@ -118,6 +131,7 @@ export const CardPreview: React.FC<CardPreviewProps> = ({ cardData }) => {
         <button
           onClick={shareCard}
           className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+          disabled={!imageLoaded}
         >
           <Share2 className="w-5 h-5" />
           Share Card

@@ -1,17 +1,22 @@
+export enum FontStyle {
+  Serif = "font-serif",
+  Sans = "font-sans",
+  Mono = "font-mono",
+}
+
+export enum TextColor {
+  Purple = "text-purple-900",
+  Indigo = "text-indigo-50",
+  Blue = "text-blue-500",
+  Rose = "text-rose-900",
+}
+
 export interface Template {
   id: number;
   name: string;
   backgroundUrl: string;
-  textColor: string;
+  textColor: TextColor; // Use enum
   overlayColor: string;
-  fontStyle: string;
-  fontBackgroundColor:string;
-}
-
-export interface CardData {
-  template: Template;
-  message: string;
-  recipient: string;
-  sender: string;
-  recipientPhoto?: string;
+  fontStyle: FontStyle; // Use enum
+  fontBackgroundColor: string;
 }
