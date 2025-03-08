@@ -31,7 +31,7 @@ export const templates: Template[] = [
     id: 3,
     name: "Blue Watercolor Dream",
     backgroundUrl: IMAGE_URLS.BLUE_WATERCOLOR_DREAM,
-    textColor: "text-blue-500", // Updated to a valid Tailwind class
+    textColor: "text-blue-900", // Updated to a valid Tailwind class
     overlayColor: "bg-blue-900/20",
     fontStyle: "font-sans",
     fontBackgroundColor: "bg-blue-100/35"
